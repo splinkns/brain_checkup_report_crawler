@@ -5,8 +5,24 @@ const fs = require('fs');
 const readline = require('readline');
 require('dotenv').config();
 
-const LOGIN_URL = 'https://brain-dock-dot-splink-neuro-science-dev.appspot.com/signin'
-const ID_LIST = 'list.txt';
+const BLI_CONFIG = {
+    login_url: 'https://brain-dock-dot-splink-neuro-science-dev.appspot.com/signin',
+    login_user: process.env.LOGIN_USER,
+    login_password: process.env.LOGIN_PASSWORD,
+    report_url_base: 'https://brain-dock-dot-splink-neuro-science-dev.appspot.com/reports',
+    id_list: 'bli.txt',
+    name_input: 'patientName',
+}
+const SA_CONFIG = {
+    login_url: 'https://web-dot-splink-neuro-science-dev.appspot.com/signin',
+    login_user: process.env.LOGIN_USER_SA,
+    login_password: process.env.LOGIN_PASSWORD_SA,
+    report_url_base: 'https://web-dot-splink-neuro-science-dev.appspot.com/reports',
+    id_list: 'sa.txt',
+    name_input: 'name',
+}
+
+const config = SA_CONFIG;
 
 class Target {
     constructor(id, date, patient_id) {
@@ -16,7 +32,7 @@ class Target {
     }
 
     get url() {
-        return `https://brain-dock-dot-splink-neuro-science-dev.appspot.com/reports/${this.id}/${this.date}/`
+        return `${config.report_url_base}/${this.id}/${this.date}/`
     }
 
     get name() {
@@ -48,12 +64,12 @@ const readTargets = async (path) => {
     return ret;
 }
 
-const login = async (page) => {
-    await page.goto(LOGIN_URL, {
+const login = async (page, config) => {
+    await page.goto(config.login_url, {
         waitUntil: 'networkidle0'
     });
-    await page.type('[name=email]', process.env.LOGIN_USER);
-    await page.type('[name=password]', process.env.LOGIN_PASSWORD);
+    await page.type('[name=email]', config.login_user);
+    await page.type('[name=password]', config.login_password);
 
     return Promise.all([
         page.waitForNavigation({
@@ -63,8 +79,8 @@ const login = async (page) => {
     ]);
 }
 
-const inputName = async (page, id) => {
-    await page.type('[name=patientName]', id);
+const inputName = async (config, page, id) => {
+    await page.type(`[name=${config.name_input}]`, id);
 
     await page.click('button');
 
@@ -73,13 +89,13 @@ const inputName = async (page, id) => {
 
 
 (async () => {
-    const targets = await readTargets(ID_LIST);
+    const targets = await readTargets(config.id_list);
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
 
     console.log('login')
-    await login(page);
+    await login(page, config);
 
     for (const t of targets) {
         console.log(`process ${t.toString}`);
@@ -88,7 +104,7 @@ const inputName = async (page, id) => {
             timeout: 5 * 60 * 1000
         });
 
-        await inputName(page, t.name);
+        await inputName(config, page, t.name);
 
         await page.pdf({
             path: t.filename,
