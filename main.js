@@ -1,12 +1,17 @@
 #! /usr/bin/env node
 
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+const readline = require('readline');
 require('dotenv').config();
 
+const ID_LIST = 'list.txt';
+
 class Target {
-    constructor(id, date) {
+    constructor(id, date, patient_id) {
         this.id = id;
         this.date = date;
+        this.patient_id = patient_id;
     }
 
     get url() {
@@ -18,18 +23,29 @@ class Target {
     }
 
     get filename() {
-        return `out/${this.id}-${this.date}.pdf`
+        return `out/${this.patient_id}-${this.date}.pdf`
     }
 
     get toString() {
-        return `Target(${this.id}, ${this.date})`
+        return `Target(${this.id}, ${this.date}, ${this.patient_id})`
     }
 }
 
 
-const targets = [
-    new Target('4699', '2020-05-11')
-]
+const readTargets = async (path) => {
+    const fileStream = fs.createReadStream(path);
+    const rl = readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity
+    });
+
+    let ret = [];
+    for await (const line of rl) {
+        const es = line.split('\t');
+        ret.push(new Target(es[0], '2020-05-11', es[1]));
+    }
+    return ret;
+}
 
 const login = async (page) => {
     await page.goto(process.env.LOGIN_URL, {
@@ -56,6 +72,7 @@ const inputName = async (page, id) => {
 
 
 (async () => {
+    const targets = await readTargets(ID_LIST);
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
