@@ -1,0 +1,4 @@
+chromeData/
+node_modules/
+out/
+.env
