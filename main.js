@@ -14,7 +14,7 @@ class Target {
     }
 
     get name() {
-        return id
+        return this.id
     }
 
     get filename() {
