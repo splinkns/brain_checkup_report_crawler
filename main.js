@@ -5,6 +5,7 @@ const fs = require('fs');
 const readline = require('readline');
 require('dotenv').config();
 
+const LOGIN_URL = 'https://brain-dock-dot-splink-neuro-science-dev.appspot.com/signin'
 const ID_LIST = 'list.txt';
 
 class Target {
@@ -15,7 +16,7 @@ class Target {
     }
 
     get url() {
-        return `https://web-dot-splink-neuro-science-dev.appspot.com/reports/${this.id}/${this.date}`
+        return `https://brain-dock-dot-splink-neuro-science-dev.appspot.com/reports/${this.id}/${this.date}/`
     }
 
     get name() {
@@ -48,7 +49,7 @@ const readTargets = async (path) => {
 }
 
 const login = async (page) => {
-    await page.goto(process.env.LOGIN_URL, {
+    await page.goto(LOGIN_URL, {
         waitUntil: 'networkidle0'
     });
     await page.type('[name=email]', process.env.LOGIN_USER);
@@ -58,12 +59,12 @@ const login = async (page) => {
         page.waitForNavigation({
             waitUntil: 'networkidle0'
         }),
-        page.click('div.Authform, div, button'),
+        page.click('button'),
     ]);
 }
 
 const inputName = async (page, id) => {
-    await page.type('[name=name]', id);
+    await page.type('[name=patientName]', id);
 
     await page.click('button');
 
