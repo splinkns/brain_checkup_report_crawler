@@ -12,6 +12,7 @@ const BLI_CONFIG = {
     report_url_base: 'https://brain-dock-dot-splink-neuro-science-dev.appspot.com/reports',
     id_list: 'bli.txt',
     name_input: 'patientName',
+    name_button: 'button',
 }
 const SA_CONFIG = {
     login_url: 'https://web-dot-splink-neuro-science-dev.appspot.com/signin',
@@ -20,6 +21,7 @@ const SA_CONFIG = {
     report_url_base: 'https://web-dot-splink-neuro-science-dev.appspot.com/reports',
     id_list: 'sa.txt',
     name_input: 'name',
+    name_button: 'div.jss274 button, div.jss424 button',
 }
 
 const config = SA_CONFIG;
@@ -82,9 +84,10 @@ const login = async (page, config) => {
 const inputName = async (config, page, id) => {
     await page.type(`[name=${config.name_input}]`, id);
 
-    await page.click('button');
-
-    page.waitFor(1000);
+    return Promise.all([
+        page.click(config.name_button),
+        page.waitFor(1000),
+    ]);
 }
 
 
